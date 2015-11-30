@@ -28,7 +28,6 @@ def get_game_details():
         # setup soups
         try:
             soup_game_data = soup.find_all("table", {"id": "outer"})[0].find_all("table", {"id": "DT_Table"})[0].find_all('tr')
-            print(soup_game_data)
         except IndexError:
             soup_game_data = None
             print("Index error")
@@ -36,8 +35,12 @@ def get_game_details():
 
         # parse soups
         if soup_game_data is not None:
+            count = 1
             for row in soup_game_data:
-                print(row.get_text().strip())
+                print("Row count: ", count)
+                for data in row.find_all('td'):
+                    print(data.get_text().strip())
+                count += 1
         else:
             print("No data found")
 
