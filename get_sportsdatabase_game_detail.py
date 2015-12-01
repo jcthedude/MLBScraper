@@ -43,33 +43,14 @@ def get_game_details():
             for row in soup_game_data:
                 row_list = []
                 for data in row.find_all('td'):
-                    row_list.append(data.get_text().strip())
+                    if data.get_text().strip() == '-':
+                        row_list.append(0)
+                    else:
+                        row_list.append(data.get_text().strip())
 
                 if len(row_list) != 0:
                     # convert date
                     row_list[1] = str(datetime.strptime(row_list[1], '%Y%m%d').date())
-
-                    # check for null values in rest columns
-                    if row_list[12] == '-':
-                        row_list[12] = 0
-                    if row_list[16] == '-':
-                        row_list[16] = 0
-                    if row_list[17] == '-':
-                        row_list[17] = 0
-                    if row_list[18] == '-':
-                        row_list[18] = 0
-                    if row_list[25] == '-':
-                        row_list[25] = 0
-                    if row_list[29] == '-':
-                        row_list[29] = 0
-                    if row_list[30] == '-':
-                        row_list[30] = 0
-                    if row_list[31] == '-':
-                        row_list[31] = 0
-                    if row_list[32] == '-':
-                        row_list[32] = 0
-                    if row_list[35] == '-':
-                        row_list[35] = 0
 
                     # insert row into db
                     db_insert(cursor, row_list, count)
@@ -84,14 +65,12 @@ def get_game_details():
     return count
 
 
-def db_truncate():
+def db_delete(get_season):
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
-    cursor.execute("""DELETE FROM Raw_GameDetail""")
+    cursor.execute("""DELETE FROM Raw_GameDetail WHERE Season = '%s'""", get_season)
     connection.commit()
     connection.close()
-
-    print("Table truncated.")
 
 
 def db_insert(cursor, row_list, count):
@@ -120,8 +99,10 @@ def main():
     start_time = datetime.now()
     print("Start time: ", str(start_time))
 
-    db_truncate()
+    db_delete(get_season)
+    print("Deleted season: ", get_season)
 
+    print("Getting season: ", get_season)
     count = get_game_details()
 
     # print process results
