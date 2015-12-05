@@ -1,4 +1,4 @@
-import mysql.connector
+import pyodbc
 from datetime import datetime
 import urllib3
 from bs4 import BeautifulSoup
@@ -35,7 +35,7 @@ def get_game_details():
 
         # parse soups
         if soup_game_data is not None:
-            connection = mysql.connector.connect(**db_config)
+            connection = pyodbc.connect(db_connection)
             cursor = connection.cursor()
             count = 1
 
@@ -65,10 +65,10 @@ def get_game_details():
     return count
 
 
-def db_delete(get_season):
-    connection = mysql.connector.connect(**db_config)
+def db_delete():
+    connection = pyodbc.connect(db_connection)
     cursor = connection.cursor()
-    cursor.execute("""DELETE FROM Raw_GameDetail WHERE Season = '%s'""", get_season)
+    cursor.execute('DELETE FROM Raw_GameDetail')
     connection.commit()
     connection.close()
 
@@ -76,16 +76,12 @@ def db_delete(get_season):
 def db_insert(cursor, row_list, count):
     print("Row #: ", count, " ---- ", row_list)
 
-    cursor.execute("""INSERT INTO Raw_GameDetail (Season, Date ,Day, GameNumber, SeriesGame, Margin, HomeTeam, HomeRuns, HomeWins, HomeLosses, HomeStreak, HomeMatchupWins, HomeRest
-        , HomeSiteStreak, HomeStarterWins, HomeStarterLosses, HomeStarterRest, HomeLine, HomeProfit, AwayTeam, AwayRuns, AwayWins, AwayLosses, AwayStreak, AwayMatchupWins, AwayRest
-        , AwaySiteStreak, AwayStarterWins, AwayStarterLosses, AwayStarterRest, AwayLine, AwayProfit, OUMargin, Over, Under, OUStreak) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-        , (row_list[0], row_list[1], row_list[2], row_list[3], row_list[4], row_list[5], row_list[6], row_list[7], row_list[8], row_list[9], row_list[10], row_list[11], row_list[12]
-        , row_list[13], row_list[14], row_list[15], row_list[16], row_list[17], row_list[18], row_list[19], row_list[20], row_list[21], row_list[22], row_list[23], row_list[24]
-        , row_list[25], row_list[26], row_list[27], row_list[28], row_list[29], row_list[30], row_list[31], row_list[32], row_list[33], row_list[34], row_list[35]))
+    cursor.execute("""INSERT INTO Raw_GameDetail ([Season], [Date], [GameNumber], [HomeTeam], [HomeRuns], [HomeWins], [HomeLosses], [HomeMatchupWins], [HomeStarterWins], [HomeStarterLosses], [AwayTeam], [AwayRuns], [AwayWins], [AwayLosses], [AwayMatchupWins], [AwayStarterWins], [AwayStarterLosses], [HomeLine], [HomeRunLine], [HomeRunLineRuns], [AwayLine], [AwayRunLine], [AwayRunLineRuns], [Over], [Under], [Total], [Margin], [OUMargin]) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        , row_list[0], row_list[1], row_list[2], row_list[3], row_list[4], row_list[5], row_list[6], row_list[7], row_list[8], row_list[9], row_list[10], row_list[11], row_list[12], row_list[13], row_list[14], row_list[15], row_list[16], row_list[17], row_list[18], row_list[19], row_list[20], row_list[21], row_list[22], row_list[23], row_list[24], row_list[25], row_list[26], row_list[27])
 
 
 def db_select():
-    connection = mysql.connector.connect(**db_config)
+    connection = pyodbc.connect(db_connection)
     cursor = connection.cursor()
     cursor.execute("""SELECT * FROM Raw_GameDetail""")
     rows = cursor.fetchall()
@@ -99,10 +95,10 @@ def main():
     start_time = datetime.now()
     print("Start time: ", str(start_time))
 
-    db_delete(get_season)
-    print("Deleted season: ", get_season)
+    db_delete()
+    print("Raw_GameDetail deleted.")
 
-    print("Getting season: ", get_season)
+    print("Getting Data...")
     count = get_game_details()
 
     # print process results
